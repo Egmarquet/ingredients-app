@@ -1,0 +1,8 @@
+A lot of unit cases are not seen in training set:
+  tsp, tbps, etc.
+
+  -> need to insert them into the training set with randomized replacement of synonyms
+
+Need to generally improve MULT cases
+
+Need to generally clean the dataset
