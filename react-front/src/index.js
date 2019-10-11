@@ -6,6 +6,7 @@ import "antd/dist/antd.css";
 import { Input, Button, Tag } from "antd";
 import axios from 'axios';
 import ContentEditable from 'react-contenteditable';
+import label_colors from "./colors.js"
 
 class MainPage extends React.Component{
   constructor(props){
@@ -43,13 +44,12 @@ class MainPage extends React.Component{
   }
 
   highlightSentence = (sentence, tokens, color) => {
-    for (var j in sentence.ingredients){
-      for (var range_ind in sentence.ingredients[j].ranges){
-        var token_ind = sentence.ingredients[j].ranges[range_ind];
+    for (var j in sentence){
+      for (var range_ind in sentence[j].ranges){
+        var token_ind = sentence[j].ranges[range_ind];
         tokens[token_ind] = "<span style=\"background-color:" + color + "\">"+ tokens[token_ind] + "</span>";
       }
     }
-    return tokens;
   }
 
   highlightOutput = (outputData) => {
@@ -59,27 +59,10 @@ class MainPage extends React.Component{
       var sentence = outputData.data[i]
       var tokens = [... sentence.tokens]
       if (sentence.valid){
-        //ingredients tagging
-        for (var j in sentence.ingredients){
-          for (var range_ind in sentence.ingredients[j].ranges){
-            var token_ind = sentence.ingredients[j].ranges[range_ind]
-            tokens[token_ind] = "<span style=\"background-color:#AED6F1\">"+ tokens[token_ind] + "</span>"
-          }
-        }
-        for (var j in sentence.units){
-          for (var range_ind in sentence.units[j].ranges){
-            var token_ind = sentence.units[j].ranges[range_ind]
-            tokens[token_ind] = "<span style=\"background-color:#76D7C4\">"+ tokens[token_ind] + "</span>"
-          }
-        }
-        for (var j in sentence.amounts){
-          for (var range_ind in sentence.amounts[j].ranges){
-            var token_ind = sentence.amounts[j].ranges[range_ind]
-            tokens[token_ind] = "<span style=\"background-color:#EDBB99\">"+ tokens[token_ind] + "</span>"
-          }
-        }
-        //units tagging
-        //amounts tagging
+        //coloring tagging
+        this.highlightSentence(sentence.ingredients, tokens, label_colors.ingredients)
+        this.highlightSentence(sentence.units, tokens, label_colors.units)
+        this.highlightSentence(sentence.amounts, tokens, label_colors.amounts)
         output.push(tokens.join(" "));
       }
     }
@@ -103,71 +86,117 @@ class MainPage extends React.Component{
 2 cups milk\n\
 ..."
 
+    const style = {
+      text_area : {
+        paddingLeft:10,
+        paddingRight:10,
+        paddingTop:3,
+        height: 350,
+        width: 500,
+        resize: "none",
+        borderStyle:"solid",
+        borderColor:"lightgrey",
+        borderRadius: 3,
+        borderWidth:1,
+        backgroundColor:"white"
+      },
+      header : {
+        color:"white",
+        margin:"auto",
+        fontSize:"24px"
+      }
+    };
+
     return(
-      <div style={{display:"flex", flexDirection:"row", alignItems: "center"}}>
-        <div style={{margin:10}}>
-          <Input.TextArea
-          style = {{height: 350, width: 500, resize: "none"}}
-          autoSize = {true}
-          placeholder = {placeholderTxt}
-          value = {this.state.text_data}
-          onChange = {this.handleTextAreaChange}/>
+      <div style={{backgroundColor:label_colors.backgroundGrey, padding:10}}>
 
-          <div style = {{marginTop: 10}}>
-            <Button
-            type="primary"
-            disabled={this.state.emptyText}
-            onClick={this.parseButtonClick}>
-              Parse Ingredients
-            </Button>
+      <div style={style.header}>
+        Ingredients Parser
+      </div>
 
-            <Button
-            onClick={this.clear}
-            disabled={this.state.emptyText}>
-              Clear
-            </Button>
+        {
+        // Top row
+        }
+
+        <div style={{
+          display:"flex",
+          flexDirection:"row",
+          alignItems: "center",
+          justifyContent: "center",
+        }}>
+
+          <div style={{margin:10, height: 370, width: 520}}>
+
+            <Input.TextArea
+            style = {{height: 350, width: 500, resize: "none"}}
+            autoSize = {true}
+            placeholder = {placeholderTxt}
+            value = {this.state.text_data}
+            onChange = {this.handleTextAreaChange}/>
+
+            <div style = {{marginTop: 10}}>
+              <Button
+              type="primary"
+              style={{marginRight: 5}}
+              disabled={this.state.emptyText}
+              onClick={this.parseButtonClick}>
+                Parse Ingredients
+              </Button>
+
+              <Button
+              onClick={this.clear}
+              disabled={this.state.emptyText}>
+                Clear
+              </Button>
+            </div>
           </div>
-        </div>
 
-        <div style={{margin:10}}>
-          <ContentEditable
-          style={{
-            paddingLeft:10,
-            paddingRight:10,
-            paddingTop:3,
-            height: 350,
-            width: 500,
-            resize: "none",
-            borderStyle:"solid",
-            borderColor:"lightgrey",
-            borderRadius: 3,
-            borderWidth:1}}
-          innerRef={this.contentEditable}
-          html={this.state.html} // innerHTML of the editable div
-          disabled={true}       // use true to disable editing
-          />
-          <div style={{marginTop: 10}}>
-            <Tag color="#AED6F1">Ingredients</Tag>
-            <Tag color="#EDBB99">Amounts</Tag>
-            <Tag color="#76D7C4">Units</Tag>
+          <div style={{margin:10, height: 370, width: 520}}>
+            <ContentEditable
+            style={style.text_area}
+            innerRef={this.contentEditable}
+            html={this.state.html} // innerHTML of the editable div
+            disabled={true}       // use true to disable editing
+            />
+            <div style={{marginTop: 10}}>
+              <Tag
+              style={{color: label_colors.backgroundGrey}}
+              color={label_colors.ingredients}>
+                Ingredients
+              </Tag>
+              <Tag
+              style={{color: label_colors.backgroundGrey}}
+              color={label_colors.amounts}>
+                Amounts
+              </Tag>
+              <Tag
+              style={{color: label_colors.backgroundGrey}}
+              color={label_colors.units}>
+                Units
+              </Tag>
+            </div>
           </div>
-        </div>
 
+      </div>
 
-        <div style={{margin:10}}>
-          <Input.TextArea
-          style = {{height: 350, width: 500, resize: "none", readonly:"readonly"}}
-          autoSize = {true}
-          value = {JSON.stringify(this.state.output_data, null, 2)}
-          />
-          <div style = {{marginTop: 10}}>
-            <Button icon="download"
-            onClick={this.download}
-            disabled={this.state.output_data === "" ? true : false}>
-              Download Json
-            </Button>
-          </div>
+      {
+      // Bottom row
+      }
+
+      <div style={{margin:"auto", marginTop:20, width:"50%"}}>
+        <Input.TextArea
+        style = {{height: 350, width: 900, resize: "none"}}
+        value = {JSON.stringify(this.state.output_data, null, 2)}
+        />
+        <div style = {{marginTop: 10}}>
+          <Button icon="download"
+          onClick={this.download}
+          type="primary"
+          disabled={this.state.output_data === "" ? true : false}>
+            Download Json
+          </Button>
         </div>
+      </div>
       </div>
     );
   }
